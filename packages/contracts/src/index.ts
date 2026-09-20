@@ -1,0 +1,24 @@
+import { z } from 'zod';
+
+export const taskStates = ['draft','planning','awaiting_approval','running','paused','completed','failed','cancelled'] as const;
+export type TaskState = typeof taskStates[number];
+export type ProviderMode = 'demo' | 'openrouter';
+export type ApprovalDecision = 'approve' | 'reject';
+export type ActionKind = 'navigate' | 'extract' | 'finish' | 'clarify' | 'submit' | 'login' | 'purchase';
+export const providerSettingsSchema = z.object({ mode: z.enum(['demo','openrouter']), model: z.string().min(1).max(120) });
+export const createTaskSchema = z.object({ goal: z.string().min(3).max(500), startUrl: z.string().url().optional(), providerMode: z.enum(['demo','openrouter']).optional() });
+export const versionSchema = z.object({ expectedVersion: z.number().int().nonnegative() });
+export const decisionSchema = z.object({ decision: z.enum(['approve','reject']), expectedVersion: z.number().int().nonnegative() });
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export type ProviderSettings = z.infer<typeof providerSettingsSchema>;
+export type ActionEnvelope = { kind: ActionKind; target?: string; args: Record<string, string>; requiresApproval: boolean; reason?: string };
+export type StepEvent = { id: string; taskId: string; version: number; type: 'browser'|'policy'|'approval'|'state'|'provider'; tool: string; summary: string; policy: 'allowed'|'blocked'|'approval_required'; occurredAt: string; correlationId: string };
+export type Approval = { id: string; taskId: string; action: ActionEnvelope; status: 'pending'|'approved'|'rejected'; createdAt: string; expiresAt: string };
+export type BrowserSession = { id: string; url: string; title: string; screenshot: string; connected: boolean; lastUpdatedAt: string };
+export type PageLink = { title: string; url: string };
+export type PageEvidence = { url: string; title: string; text: string; links: PageLink[]; stories: PageLink[]; capturedAt: string };
+export type Task = { id: string; goal: string; startUrl: string; state: TaskState; providerMode: ProviderMode; model: string; version: number; stepsCompleted: number; createdAt: string; updatedAt: string; session: BrowserSession; events: StepEvent[]; latestApproval?: Approval; observation?: PageEvidence; evidence?: PageEvidence; result?: string; error?: string; responseModel?: string; visitedUrls?: string[] };
+export type TaskSummary = Pick<Task, 'id'|'goal'|'startUrl'|'state'|'providerMode'|'stepsCompleted'|'updatedAt'>;
+export type ErrorCode = 'VALIDATION_ERROR'|'NOT_FOUND'|'CONFLICT'|'UNAUTHORIZED'|'POLICY_BLOCKED'|'PROVIDER_ERROR'|'INTERNAL_ERROR';
+export type ErrorResponse = { error: { code: ErrorCode; message: string; details?: unknown } };
+export const taskSummary = (task: Task) => ({ id: task.id, goal: task.goal, startUrl: task.startUrl, state: task.state, providerMode: task.providerMode, stepsCompleted: task.stepsCompleted, updatedAt: task.updatedAt });
