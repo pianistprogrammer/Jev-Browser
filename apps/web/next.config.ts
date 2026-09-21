@@ -4,7 +4,12 @@ const nextConfig: NextConfig = {
   distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   transpilePackages: ['@jev/contracts'],
   async rewrites() {
-    return [{ source: '/api/:path*', destination: `${process.env.API_BASE_URL ?? 'http://127.0.0.1:4000'}/api/:path*` }];
+    const api = process.env.API_BASE_URL ?? 'http://127.0.0.1:4000';
+    return [
+      { source: '/api/:path*', destination: `${api}/api/:path*` },
+      { source: '/browser-ui', destination: `${api}/browser-ui/` },
+      { source: '/browser-ui/:path*', destination: `${api}/browser-ui/:path*` },
+    ];
   },
 };
 export default nextConfig;

@@ -1,8 +1,6 @@
-import type { ProviderMode } from "@jev/contracts";
 import { readFileSync } from "node:fs";
 import { parseEnv } from "node:util";
 
-// Resolve from this module; npm workspace scripts start in apps/api.
 if (process.env.NODE_ENV !== "test") {
   try {
     const values = parseEnv(readFileSync(new URL("../../../.env", import.meta.url), "utf8"));
@@ -11,33 +9,29 @@ if (process.env.NODE_ENV !== "test") {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
 }
+
 export type Config = {
   port: number;
   webOrigin: string;
-  providerMode: ProviderMode;
-  model: string;
-  openRouterKey?: string;
-  openRouterBaseUrl: string;
+  qwenBaseUrl: string;
+  qwenModel: string;
   browserHeadless: boolean;
+  browserCdpUrl: string;
+  browserUiUrl: string;
+  browserUser: string;
+  browserPassword: string;
   browserHomeUrl: string;
-  ollamaBaseUrl: string;
-  ollamaModel: string;
 };
-export const loadConfig = (): Config => {
-  const mode =
-    process.env.JEV_PROVIDER_MODE === "openrouter" ? "openrouter" : "demo";
-  return {
-    port: Number(process.env.API_PORT ?? 4000),
-    webOrigin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
-    providerMode: mode,
-    model: process.env.JEV_MODEL ?? "typesafe/jev-1.13",
-    openRouterKey: process.env.OPENROUTER_API_KEY,
-    openRouterBaseUrl:
-      process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1",
-    browserHeadless: process.env.BROWSER_HEADLESS !== "false",
-    browserHomeUrl:
-      process.env.BROWSER_HOME_URL ?? "about:blank",
-    ollamaBaseUrl: process.env.OLLAMA_BASE_URL ?? "http://127.0.0.1:11434",
-    ollamaModel: process.env.OLLAMA_MODEL ?? "gemma4:e2b",
-  };
-};
+
+export const loadConfig = (): Config => ({
+  port: Number(process.env.API_PORT ?? 4000),
+  webOrigin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
+  qwenBaseUrl: process.env.LLAMA_BASE_URL ?? "http://127.0.0.1:8180/v1",
+  qwenModel: process.env.LLAMA_MODEL ?? "qwen-local",
+  browserHeadless: process.env.BROWSER_HEADLESS !== "false",
+  browserCdpUrl: process.env.BROWSER_CDP_URL ?? "http://127.0.0.1:9223",
+  browserUiUrl: process.env.BROWSER_UI_URL ?? "http://127.0.0.1:3010",
+  browserUser: process.env.BROWSER_USER ?? "agent",
+  browserPassword: process.env.BROWSER_PASSWORD ?? "",
+  browserHomeUrl: process.env.BROWSER_HOME_URL ?? "about:blank",
+});

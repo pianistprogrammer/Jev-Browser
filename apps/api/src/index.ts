@@ -41,7 +41,7 @@ void app.register(cors, {
 
 app.get("/api/health", async () => ({
   status: "ok",
-  services: { database: "ok", redis: "ok", storage: "ok" },
+  services: { database: "memory" },
   providerMode: "demo",
 }));
 

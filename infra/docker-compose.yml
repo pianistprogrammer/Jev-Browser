@@ -1,8 +1,27 @@
 services:
-  redis:
-    image: redis:7-alpine
-    ports: ["6379:6379"]
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    command: azurite --blobHost 0.0.0.0
-    ports: ["10000:10000"]
+  browser:
+    image: lscr.io/linuxserver/chromium:latest
+    container_name: jev-browser
+    environment:
+      - TZ=Etc/UTC
+      - PUID=1000
+      - PGID=1000
+      - CUSTOM_USER=${BROWSER_USER:-agent}
+      - PASSWORD=${BROWSER_PASSWORD:-jarvis-local}
+      - CUSTOM_PORT=3010
+      - CUSTOM_HTTPS_PORT=3011
+      - CHROME_CLI=--remote-debugging-port=9222
+      - RESTART_APP=true
+      - TITLE=JEV Browser
+    volumes:
+      - browser-profile:/config
+      - ./infra/cdp-proxy.py:/usr/local/bin/cdp-proxy.py:ro
+    ports:
+      - "127.0.0.1:3010:3010"
+      - "127.0.0.1:3011:3011"
+      - "127.0.0.1:9223:9223"
+    restart: unless-stopped
+    shm_size: "1gb"
+
+volumes:
+  browser-profile:
